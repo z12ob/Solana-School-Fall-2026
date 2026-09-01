@@ -1,0 +1,31 @@
+{
+  "name": "hello-solana-session-01",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal Anchor lab for Solana School Fall Class 2026 Session 1",
+  "license": "MIT",
+  "type": "commonjs",
+  "packageManager": "yarn@1.22.22",
+  "scripts": {
+    "lint": "prettier \"**/*.{js,ts,json}\" --check",
+    "lint:fix": "prettier \"**/*.{js,ts,json}\" --write",
+    "test": "anchor test",
+    "pda": "node pda.js"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1"
+  },
+  "resolutions": {
+    "**/uuid": "11.1.1"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.0",
+    "mocha": "^11.8.0",
+    "prettier": "^2.6.2",
+    "ts-mocha": "^11.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  }
+}

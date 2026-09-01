@@ -1,0 +1,343 @@
+1
+00:00:00,000 --> 00:00:06,905
+This is an unofficial Session 1 study artifact for Solana School Fall 2026.
+
+2
+00:00:06,905 --> 00:00:14,342
+It covers the execution model, accounts, transactions, parallel scheduling, Program Derived Addresses, cross-program invocation,
+
+3
+00:00:14,342 --> 00:00:18,592
+compute limits, clusters, and the Anchor development loop.
+
+4
+00:00:18,592 --> 00:00:26,559
+The material is based on personal notes and checked against public Solana and Anchor documentation.
+
+5
+00:00:26,559 --> 00:00:30,809
+It is not an official Solana Foundation presentation.
+
+6
+00:00:31,609 --> 00:00:39,013
+A Solana client chooses a program, supplies instruction data, and declares the accounts the instruction will use.
+
+7
+00:00:39,013 --> 00:00:43,803
+One or more instructions are placed in a transaction and signed.
+
+8
+00:00:43,803 --> 00:00:51,207
+The validator loads the target program and the requested accounts, then the SVM executes the program logic.
+
+9
+00:00:51,207 --> 00:00:57,739
+Persistent application state normally lives in separate data accounts rather than in program-local global state.
+
+10
+00:00:57,739 --> 00:01:05,143
+This separation matters because the runtime knows exactly which state a transaction may access before execution begins.
+
+11
+00:01:05,943 --> 00:01:12,037
+A persistent account contains lamports, arbitrary data bytes, an owner program ID, an executable
+
+12
+00:01:12,037 --> 00:01:15,084
+flag, and the deprecated rent epoch field.
+
+13
+00:01:15,084 --> 00:01:21,178
+The owner field names the program allowed to modify account data or debit lamports.
+
+14
+00:01:21,178 --> 00:01:25,966
+It does not identify a person who holds a private key.
+
+15
+00:01:25,966 --> 00:01:28,578
+Signer and writable status are different.
+
+16
+00:01:28,578 --> 00:01:31,625
+They are privileges declared for an instruction.
+
+17
+00:01:31,625 --> 00:01:39,025
+Signer status means a required signature was supplied, or the runtime granted signer privilege for a PDA.
+
+18
+00:01:39,025 --> 00:01:42,942
+Writable status means the instruction may modify the account.
+
+19
+00:01:42,942 --> 00:01:46,860
+These flags are not stored as permanent account fields.
+
+20
+00:01:47,660 --> 00:01:53,726
+An instruction identifies a target program, an ordered list of account metadata, and an
+
+21
+00:01:53,726 --> 00:01:56,759
+opaque byte array interpreted by that program.
+
+22
+00:01:56,759 --> 00:02:03,259
+A transaction combines one or more instructions with a recent blockhash and the required signatures.
+
+23
+00:02:03,259 --> 00:02:05,859
+Transactions are atomic for state changes.
+
+24
+00:02:05,859 --> 00:02:11,925
+If a later instruction fails, changes made by earlier instructions in the same transaction
+
+25
+00:02:11,925 --> 00:02:15,825
+are rolled back, and later instructions do not run.
+
+26
+00:02:15,825 --> 00:02:22,758
+The transaction can still be charged its fee because validators performed signature verification and execution work.
+
+27
+00:02:23,558 --> 00:02:29,226
+Before execution, each transaction declares which accounts are read-only and which are writable.
+
+28
+00:02:29,226 --> 00:02:32,715
+Multiple transactions may read the same account concurrently.
+
+29
+00:02:32,715 --> 00:02:38,819
+A transaction that writes an account requires exclusive access to that account, so it
+
+30
+00:02:38,819 --> 00:02:43,616
+conflicts with other readers or writers until the lock is available.
+
+31
+00:02:43,616 --> 00:02:48,412
+Transactions whose account sets do not conflict can execute in parallel.
+
+32
+00:02:48,412 --> 00:02:51,464
+This is why accurate account declarations matter.
+
+33
+00:02:51,464 --> 00:02:58,441
+Marking an unnecessary account writable grants extra privilege and can reduce concurrency by creating avoidable contention.
+
+34
+00:02:59,241 --> 00:03:05,749
+A Program Derived Address is calculated from application-specific seeds, a program ID, and a bump.
+
+35
+00:03:05,749 --> 00:03:11,823
+The canonical bump is the first valid value found while searching downward from 255.
+
+36
+00:03:11,823 --> 00:03:18,331
+The resulting address is off the Ed25519 curve, so it has no corresponding private key.
+
+37
+00:03:18,331 --> 00:03:21,802
+Deriving the address does not create an account.
+
+38
+00:03:21,802 --> 00:03:27,876
+A program instruction must still allocate and fund an account at that address if
+
+39
+00:03:27,876 --> 00:03:29,611
+persistent storage is needed.
+
+40
+00:03:29,611 --> 00:03:35,686
+During a cross-program invocation, invoke signed lets the runtime grant signer privilege when the
+
+41
+00:03:35,686 --> 00:03:40,458
+calling program supplies the seeds and bump that reproduce its PDA.
+
+42
+00:03:41,258 --> 00:03:45,195
+Cross-program invocation allows one Solana program to call another.
+
+43
+00:03:45,195 --> 00:03:51,319
+Signer and writable privileges can propagate from the caller, but the called program cannot
+
+44
+00:03:51,319 --> 00:03:54,819
+receive greater privileges than the caller was given.
+
+45
+00:03:54,819 --> 00:04:01,380
+A program can authorize its PDA by supplying the correct derivation seeds to invoke signed.
+
+46
+00:04:01,380 --> 00:04:04,442
+This does not create a private-key signature.
+
+47
+00:04:04,442 --> 00:04:09,254
+Account locking should not be described as a general reentrancy guard.
+
+48
+00:04:09,254 --> 00:04:12,316
+Direct self-recursion is allowed within instruction-stack limits.
+
+49
+00:04:12,316 --> 00:04:18,440
+Indirect reentrancy, such as program A calling B and B calling A again, is
+
+50
+00:04:18,440 --> 00:04:20,190
+rejected by the runtime.
+
+51
+00:04:20,990 --> 00:04:24,639
+Compute units meter the work performed during execution.
+
+52
+00:04:24,639 --> 00:04:31,023
+Under the documented defaults, each non-builtin instruction receives 200 thousand compute units, and a
+
+53
+00:04:31,023 --> 00:04:34,216
+transaction may request up to 1.4 million.
+
+54
+00:04:34,216 --> 00:04:40,145
+The base transaction fee is 5 thousand lamports per signature. Priority is separate.
+
+55
+00:04:40,145 --> 00:04:46,530
+The priority fee is the ceiling of the requested compute-unit limit multiplied by the
+
+56
+00:04:46,530 --> 00:04:50,178
+compute-unit price in micro-lamports, divided by 1 million.
+
+57
+00:04:50,178 --> 00:04:56,107
+Raising the limit alone does not increase priority when the price is zero.
+
+58
+00:04:56,107 --> 00:05:02,492
+The requested limit, not actual compute consumption, is used to calculate the priority fee.
+
+59
+00:05:03,292 --> 00:05:07,855
+Localnet is a private validator used for fast, repeatable development.
+
+60
+00:05:07,855 --> 00:05:11,505
+Its ledger and local test SOL are disposable.
+
+61
+00:05:11,505 --> 00:05:16,524
+Devnet is a public development cluster with faucets and Explorer visibility.
+
+62
+00:05:16,524 --> 00:05:22,000
+Devnet SOL has no monetary value, and cluster state may be reset.
+
+63
+00:05:22,000 --> 00:05:27,475
+Mainnet beta is the production network and uses assets with real value.
+
+64
+00:05:27,475 --> 00:05:32,038
+Session 1 development and deployment stay on localnet or devnet.
+
+65
+00:05:32,038 --> 00:05:39,795
+Before diagnosing a cluster-specific problem, run Solana config get and confirm the active RPC endpoint and wallet.
+
+66
+00:05:40,595 --> 00:05:46,287
+In an Anchor project, the Rust program lives under the programs directory.
+
+67
+00:05:46,287 --> 00:05:52,453
+Anchor dot toml records provider settings, wallet configuration, test commands, and program IDs.
+
+68
+00:05:52,453 --> 00:05:56,247
+TypeScript integration tests live under the tests directory.
+
+69
+00:05:56,247 --> 00:06:02,414
+Anchor build produces the deployable program, an interface description, and generated client types.
+
+70
+00:06:02,414 --> 00:06:10,477
+Anchor test starts or connects to a validator, deploys the program, and runs the configured test command.
+
+71
+00:06:10,477 --> 00:06:14,746
+Files under target deploy can include a deployment keypair.
+
+72
+00:06:14,746 --> 00:06:20,912
+That keypair determines the program ID and must never be committed or published.
+
+73
+00:06:21,712 --> 00:06:26,862
+A client derives any required addresses and fetches current account state.
+
+74
+00:06:26,862 --> 00:06:34,822
+It builds instructions, declares account privileges, groups the instructions in a transaction, and obtains the required signatures.
+
+75
+00:06:34,822 --> 00:06:40,909
+An RPC node receives the transaction and forwards it into the validator network.
+
+76
+00:06:40,909 --> 00:06:47,933
+The runtime detects account conflicts, acquires the necessary locks, and runs each instruction in order.
+
+77
+00:06:47,933 --> 00:06:52,147
+If every instruction succeeds, the account changes are committed.
+
+78
+00:06:52,147 --> 00:06:56,829
+If any instruction fails, all state changes are rolled back.
+
+79
+00:06:56,829 --> 00:07:03,384
+The transaction signature and program logs provide the evidence needed to inspect the result.
+
+80
+00:07:04,184 --> 00:07:10,964
+When a Solana program fails, check the active tool versions, cluster, wallet, and program
+
+81
+00:07:10,964 --> 00:07:12,901
+IDs before changing code.
+
+82
+00:07:12,901 --> 00:07:17,259
+Reproduce the problem locally with Anchor test when possible.
+
+83
+00:07:17,259 --> 00:07:21,133
+Read the exact transaction error and program logs.
+
+84
+00:07:21,133 --> 00:07:27,429
+Then check account funding, signer status, writable privileges, PDA seeds, and compute use.
+
+85
+00:07:27,429 --> 00:07:34,208
+The accompanying repository contains the detailed Session 1 notes, commands, reproducible lab, and links
+
+86
+00:07:34,208 --> 00:07:37,598
+to the official sources used for verification.

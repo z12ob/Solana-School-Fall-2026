@@ -1,0 +1,44 @@
+# Rust, Solana, and Anchor build output
+target/
+**/target/
+.anchor/
+**/.anchor/
+test-ledger/
+**/test-ledger/
+*.rs.bk
+
+# JavaScript dependencies and caches
+node_modules/
+**/node_modules/
+.yarn/
+*.tsbuildinfo
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+id.json
+**/id.json
+*-keypair.json
+**/*-keypair.json
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Raw/private source material and large media
+recordings/
+transcripts/
+raw/
+*Transcript*.txt
+*transcript*.txt
+*.mp4
+*.mp3
+*.wav
+*.m4a
+
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db
+desktop.ini
