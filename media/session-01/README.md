@@ -10,7 +10,7 @@ A 12-page visual reference covering accounts, transactions, parallel scheduling,
 
 A 7-minute 38-second narrated explainer covering the Session 1 execution model, accounts, transactions, parallel execution, PDAs, CPI, compute limits, clusters, and the development workflow.
 
-The corrected `unlocking-the-svm.mp4` release candidate will be attached to the `session-01` GitHub Release after the initial repository commit. The MP4 remains excluded from normal Git history.
+[Watch or download Unlocking the SVM](https://github.com/z12ob/Solana-School-Fall-2026/releases/download/session-01/unlocking-the-svm.mp4).
 
 [English captions](unlocking-the-svm.en.srt) are stored with the repository and rendered directly into the release candidate for consistent playback.
 
